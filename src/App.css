@@ -17,3 +17,10 @@ body,
 ::-webkit-scrollbar-thumb {
     @apply bg-rose-500 rounded-xl;
 }
+
+#task > ::-webkit-scrollbar-thumb {
+    @apply bg-rose-400 rounded-3xl
+}
+#task textarea > ::-webkit-scrollbar-thumb {
+    @apply bg-rose-400 rounded-3xl
+}
