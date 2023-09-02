@@ -1,16 +1,29 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import {createPortal} from "react-dom";
 import uniqid from "uniqid";
 
 import PlusIcon from "../icons/plus";
 import { Id, Column } from "../types";
 import ColumnContainer from "./ColumnContainer";
 
+import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, useSensors, useSensor } from "@dnd-kit/core";
+import { SortableContext } from "@dnd-kit/sortable";
+import { arrayMove } from "@dnd-kit/sortable";
+
 
 
 export default function KanbanBoard() {
 
     const [columns, setColumns] = useState<Column[]>([]);
-
+    const columnsId = useMemo(() => columns.map((col) => col.id), [columns]);
+    const [activeColumn, setActiveColumn] = useState<Column | null>(null);
+    const sensors = useSensors(useSensor(PointerSensor,{
+        activationConstraint: {
+            distance: 1,
+        }
+    }))
+   
+    
     function createColumn() {
         const newColumn: Column = {
             id: uniqid(),
@@ -25,6 +38,33 @@ export default function KanbanBoard() {
         setColumns(newColumns);
     }
 
+    function onDragStart(event: DragStartEvent) {
+        console.log("Drag Start", event);
+        if (event.active.data.current?.type === "Column") {
+            setActiveColumn(event.active.data.current.column);
+        }
+    }
+
+    function onDragEnd(event: DragEndEvent) {
+        const { active, over } = event;
+
+        if (!over) return;
+
+        const activeColumnId = active.id;
+        const overColumnId = over.id;
+
+        if (activeColumnId === overColumnId) return;
+
+        setColumns(columns => {
+            const activeColumnIdAfter = columns.findIndex(col => col.id === activeColumnId);
+            const overColumnIdAfter = columns.findIndex((col) => col.id === overColumnId);
+
+            return arrayMove(columns, activeColumnIdAfter, overColumnIdAfter);
+        })
+    }
+
+  
+
     return(
         <>
             <div className="
@@ -37,6 +77,11 @@ export default function KanbanBoard() {
                 overflow-y-hidden
                 px-[40px]
             ">
+                <DndContext 
+                sensors={sensors}
+                onDragStart={onDragStart} 
+                onDragEnd={onDragEnd}>
+
                 <div className="
                     mx-auto
                     flex
@@ -47,9 +92,12 @@ export default function KanbanBoard() {
                             flex
                             gap-4
                         ">
+                            <SortableContext items={columnsId}>
+
                             {
                                 columns.map(col => <ColumnContainer key={col.id} column={col} deleteColumn={deleteColumn} /> )
                             }
+                            </SortableContext>
                         </div>
 
                 <button 
@@ -76,6 +124,21 @@ export default function KanbanBoard() {
                     Add Column
                 </button>
                 </div>
+                {
+                    createPortal(
+                        <DragOverlay>
+                    {
+                    activeColumn
+                    &&
+                    <ColumnContainer 
+                    column={activeColumn} 
+                    deleteColumn={deleteColumn} />
+                    }
+                </DragOverlay>
+                    ,document.body)
+                }
+                
+                </DndContext>
             </div>
         </>
     );
