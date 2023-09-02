@@ -1,5 +1,5 @@
 # Deployement to Vercel :
-- [Vercel Deploy] https://kanban-umber.vercel.app/
+- [Vercel Deploy] (https://kanban-dnd-ts.vercel.app/)
 
 
 # React + TypeScript + Vite
