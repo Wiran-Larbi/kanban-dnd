@@ -1,12 +1,14 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import TrashIcon from "../icons/trash";
 import { Id, Column, Task } from "../types";
 // import { useSortable } from "@dnd-kit/sortable/dist/hooks";
 import { useSortable } from "@dnd-kit/sortable";
+import { SortableContext } from "@dnd-kit/sortable";
 import { CSS }from "@dnd-kit/utilities";
 import ColumnInput from "./ColumnInput";
 import PlusIcon from "../icons/plus";
 import TaskCard from "./TaskCard";
+
 
 interface Props {
     column: Column;
@@ -37,6 +39,7 @@ export default function ColumnContainer(props: Props) {
         transition,
         transform: CSS.Transform.toString(transform),
     }
+    const tasksIds = useMemo(() => tasks.map(task => task.id), [tasks]);
 
     if (isDragging) {
         return (
@@ -136,10 +139,12 @@ export default function ColumnContainer(props: Props) {
             overflow-x-hidden
             overflow-y-auto
             ">
+                <SortableContext items={tasksIds}>
                 {tasks.map(task => (
                     // <div key={task.id}>{task.content}</div>
                     <TaskCard key={task.id} task={task} deleteTask={deleteTask} updateTask={updateTask} />
                 ))}
+                </SortableContext>
             </div>
 
             <button 

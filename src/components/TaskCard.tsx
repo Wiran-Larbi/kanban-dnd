@@ -1,6 +1,9 @@
 import { useState } from "react";
 import TrashIcon from "../icons/trash";
 import { Id, Task } from "../types";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS }from "@dnd-kit/utilities";
+
 
 interface TaskCardProps {
     task: Task;
@@ -14,6 +17,20 @@ export default function TaskCard(props: TaskCardProps) {
     const [mouseOver, setMouseOver] = useState<boolean>(false);
     const [editMode, setEditMode] = useState<boolean>(false);
 
+    const { setNodeRef, attributes, listeners, transform, transition, isDragging } = useSortable({
+        id: task.id,
+        data: {
+            type: "Task",
+            task,
+        },
+        disabled: editMode
+    });
+
+    const style = {
+        transition,
+        transform: CSS.Transform.toString(transform),
+    }
+
     function toggleEditMode() {
         setEditMode((prev) => !prev);
         setMouseOver(false);
@@ -22,7 +39,11 @@ export default function TaskCard(props: TaskCardProps) {
     if (editMode) {
 
         return (
-            <div 
+            <div
+            {...attributes}
+            {...listeners} 
+            ref={setNodeRef}
+            style={style}
             id="task"
             className="
             relative
@@ -62,13 +83,38 @@ export default function TaskCard(props: TaskCardProps) {
                 bg-transparent
                 text-white
                 focus:outline-none
-                "></textarea>
+                "/>
+            </div>
+        );
+    }
+
+    if (isDragging) {
+
+        return (
+            <div 
+            ref={setNodeRef}
+            style={style}
+            className="
+            p-2.5
+            h-[100px]
+            min-h-[100px]
+            rounded-xl
+         bg-mainBackgroundColor
+            opacity-30
+            ring-2
+            ring-rose-500
+            ">
+
             </div>
         );
     }
     
     return (
         <div
+        {...attributes}
+        {...listeners} 
+        ref={setNodeRef}
+        style={style}
         id="task"
         onClick={toggleEditMode} 
         onMouseEnter={() => setMouseOver(true)}
