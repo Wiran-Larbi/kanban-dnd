@@ -15,8 +15,9 @@ import { arrayMove } from "@dnd-kit/sortable";
 export default function KanbanBoard() {
 
     const [columns, setColumns] = useState<Column[]>([]);
-    const columnsId = useMemo(() => columns.map((col) => col.id), [columns]);
     const [activeColumn, setActiveColumn] = useState<Column | null>(null);
+    const columnsId = useMemo(() => columns.map((col) => col.id), [columns]);
+
     const sensors = useSensors(useSensor(PointerSensor,{
         activationConstraint: {
             distance: 1,
@@ -34,6 +35,14 @@ export default function KanbanBoard() {
     }
     function deleteColumn(id: Id) {
         const newColumns = columns.filter((col) => col.id !== id);
+
+        setColumns(newColumns);
+    }
+    function updateColumn(id: Id, title: string) {
+        const newColumns = columns.map(col => {
+            if (col.id !== id) return col;
+            return {...col,title};
+        })
 
         setColumns(newColumns);
     }
@@ -95,7 +104,7 @@ export default function KanbanBoard() {
                             <SortableContext items={columnsId}>
 
                             {
-                                columns.map(col => <ColumnContainer key={col.id} column={col} deleteColumn={deleteColumn} /> )
+                                columns.map(col => <ColumnContainer key={col.id} column={col} deleteColumn={deleteColumn} updateColumn={updateColumn} /> )
                             }
                             </SortableContext>
                         </div>
@@ -132,7 +141,9 @@ export default function KanbanBoard() {
                     &&
                     <ColumnContainer 
                     column={activeColumn} 
-                    deleteColumn={deleteColumn} />
+                    deleteColumn={deleteColumn} 
+                    updateColumn={updateColumn}
+                    />
                     }
                 </DragOverlay>
                     ,document.body)

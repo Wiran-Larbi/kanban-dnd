@@ -1,23 +1,29 @@
+import { useState } from "react";
 import TrashIcon from "../icons/trash";
 import { Id, Column } from "../types";
 // import { useSortable } from "@dnd-kit/sortable/dist/hooks";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS }from "@dnd-kit/utilities";
+import ColumnInput from "./ColumnInput";
 
 interface Props {
     column: Column;
-    deleteColumn: (id: Id) => void
+    deleteColumn: (id: Id) => void;
+    updateColumn: (id: Id, title: string) => void;
 }
 
 
 export default function ColumnContainer(props: Props) {
-    const { column, deleteColumn } = props;
+    const [editMode, setEditMode] = useState<boolean>(false);
+
+    const { column, deleteColumn, updateColumn } = props;
     const { setNodeRef, attributes, listeners, transform, transition, isDragging } = useSortable({
         id: column.id,
         data: {
             type: "Column",
             column,
         },
+        disabled: editMode
     });
     const style = {
         transition,
@@ -58,7 +64,8 @@ export default function ColumnContainer(props: Props) {
         rounded-md
         ">
             {/* Column Title */}
-        <div 
+        <div
+        onClick={() => setEditMode(true)}
         {...attributes}
         {...listeners}
         className="
@@ -92,7 +99,8 @@ export default function ColumnContainer(props: Props) {
                 ">
                     0
                 </div>
-                {column.title}
+                {!editMode && column.title}
+                {editMode && <ColumnInput id={column.id} title={column.title} onEdit={setEditMode} updateColumn={updateColumn} />}
             </div>
             <button 
             onClick={() => deleteColumn(column.id)}
