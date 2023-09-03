@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import TrashIcon from "../icons/trash";
 import { Id, Column, Task } from "../types";
 // import { useSortable } from "@dnd-kit/sortable/dist/hooks";
@@ -24,9 +24,22 @@ interface Props {
 
 
 export default function ColumnContainer(props: Props) {
-    const [editMode, setEditMode] = useState<boolean>(false);
-
     const { column, deleteColumn, updateColumn, tasks, createTask, deleteTask, updateTask } = props;
+    const [editMode, setEditMode] = useState<boolean>(false);
+    const [counter, setCounter] = useState<number>(0);
+
+    useEffect(() => {
+        const newTasksId = tasks.map(task => task.id);
+        if (newTasksId.length !== tasksIds.length){
+            setCounter(tasks.length || 0);
+        }
+        else if (newTasksId.every((element,index) => element === tasksIds[index])){
+            setCounter(tasks.length || 0);
+        } else if (tasks.length === 0) {
+            setCounter(0);
+        }
+    }, tasks);
+
     const { setNodeRef, attributes, listeners, transform, transition, isDragging } = useSortable({
         id: column.id,
         data: {
@@ -108,7 +121,7 @@ export default function ColumnContainer(props: Props) {
                 bg-columnBackgroundColor
                 rounded-full
                 ">
-                    0
+                    {counter}
                 </div>
                 {!editMode && column.title}
                 {editMode && <ColumnInput id={column.id} title={column.title} onEdit={setEditMode} updateColumn={updateColumn} />}
@@ -148,7 +161,7 @@ export default function ColumnContainer(props: Props) {
             </div>
 
             <button 
-            onClick={() => createTask(column.id)}
+            onClick={() => {createTask(column.id); setCounter(prev => prev + 1) }}
             className="
             p-4
             flex

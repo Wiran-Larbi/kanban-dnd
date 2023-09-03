@@ -152,7 +152,7 @@ export default function TaskCard(props: TaskCardProps) {
                 &&
 
             <button 
-            onClick={() => deleteTask(task.id)}
+            onClick={() => {deleteTask(task.id)}}
             className="
             p-2
             absolute
